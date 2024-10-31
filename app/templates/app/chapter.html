@@ -1,0 +1,256 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    {{ chapter }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="padding-top: 100px;" id="top" data-bs-spy="scroll" data-bs-target="#backToTop" data-bs-offset="0" tabindex="0">
+
+    <h1>{{ chapter }}</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" href="/chapters/{{ chapter.id }}">Content</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_responses/{{ chapter.id }}">Responses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_summaries/{{ chapter.id }}">Summary</a>
+        </li>
+        <li>
+          <a class="nav-link" href="/chapter_matrix/{{ chapter.id }}">Skill Matrix</a>
+        </li>
+    </ul>
+
+    <div class="my-4">
+        <a class="btn btn-outline-dark" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+        <a class="btn btn-outline-primary" href="/edit_chapters/{{ chapter.id }}" role="button">Edit</a>
+        {% if chapter.isPublished %}
+            <a class="btn btn-outline-primary" href="/unpublish_chapter/{{ chapter.id }}" role="button">Unpublish</a>
+            <a class="btn btn-outline-primary" href="/download_chapter/{{ chapter.id }}" role="button">Download</a>    
+        {% else %}
+            <a class="btn btn-outline-primary" href="/publish_chapter/{{ chapter.id }}" role="button">Publish</a>
+        {% endif %}
+    </div>
+    <div class="my-5">
+        {% if elements %}
+            {% for element, skill_names in elements.items %}
+                <div class="my-3">
+                        {% if element.element_type == "paragraph" %}
+                            <div class="mb-3">
+                                <p class="card-text" style="white-space: pre-line;">{{element.content}}</p>
+                            </div>
+                        {% elif element.element_type == "note" %}
+                            <div class="card mb-3 pb-2 bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title mt-2 mb-3">Note: </h5>
+                                    <p class="card-text" style="white-space: pre-line;">{{element.content}}</p>
+                                </div>
+                            </div>
+                        {% elif element.element_type == "example" %}
+                            <div class="card mb-3 pb-2 bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title mt-2 mb-3">Example:</h5>
+                                    <p class="card-text" style="white-space: pre-line;">{{element.content}}</p>
+                                </div>
+                            </div>
+                        {% elif element.element_type == "subsection" %}
+                            <div class="mb-3">
+                                <h3 class="card-text text-primary mt-5 fw-bold" style="white-space: pre-line;">{{element.content}}</h3 class="card-text">
+                                <hr>
+                            </div>
+                        {% elif element.element_type == "image" %}
+                            <div class="mb-3">
+                                {% if element.content != "" %}
+                                    <img src="{% static 'app/' %}{{ element.content }}" alt="{{ element.content }}" style="max-width: 30%; object-fit: contain;">
+                                {% else %}
+                                    <p>No image uploaded. </p>
+                                {% endif %}
+                            </div>
+                        {% elif element.element_type == "video" %}
+                            <div class="mb-3">
+                                {% if element.content == "" %}
+                                    <p>No video linked. </p>
+                                {% else %}
+                                    <a href="https://www.youtube.com/watch?v={{ element.content }}" target="_blank">https://www.youtube.com/watch?v={{ element.content }}</a>
+                                {% endif %}
+                            </div>
+                        {% elif element.element_type == "mcq" %}
+                            <div class="card mb-3 pb-2">
+                                <div class="card-body">
+                                    <h5 class="card-title mt-2 mb-3">Multiple choice: </h5>
+                                    <p><strong>Question:</strong> {{ element.question }}</p>
+                                    <p><strong>Options:</strong> {{ element.options }}</p>
+                                    <p><strong>Answer:</strong> {{ element.answer }}</p>
+                                    {% if element.hint != "" %}
+                                        <p><strong>Hint:</strong> {{ element.hint }}</p>    
+                                    {% else %}
+                                        <p><strong>Hint:</strong> No hint provided.</p>    
+                                    {% endif %}
+                                    {% if skill_names != "" %}
+                                        <p><strong>Skills:</strong> {{ skill_names }}</p>
+                                    {% else %}
+                                        <p><strong>Skills:</strong> No related skills specified.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% elif element.element_type == "fib" %}
+                            <div class="card mb-3 pb-2">
+                                <div class="card-body">
+                                    <h5 class="card-title mt-2 mb-3">Fill in the blank: </h5>
+                                    <p><strong>Question:</strong> {{ element.question }}</p>
+                                    <p><strong>Answer:</strong> {{ element.answer }}</p>
+                                    {% if element.hint != "" %}
+                                        <p><strong>Hint:</strong> {{ element.hint }}</p>    
+                                    {% else %}
+                                        <p><strong>Hint:</strong> No hint provided.</p>    
+                                    {% endif %}
+                                    {% if skill_names != "" %}
+                                        <p><strong>Skills:</strong> {{ skill_names }}</p>
+                                    {% else %}
+                                        <p><strong>Skills:</strong> No related skills specified.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% elif element.element_type == "likert" %}
+                            <div class="card mb-3 pb-2">
+                                <div class="card-body">
+                                    <h5 class="card-title mt-2 mb-3">Likert scale: </h5>
+                                    <p><strong>Question:</strong> {{ element.question }}</p>
+                                    <p><strong>{{ element.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ element.positive }}</strong></p>
+                                </div>
+                            </div>
+                        {% endif %}   
+                </div>
+            {% endfor %}
+        {% else %}
+            <h3>No contents are available. Click either of the Edit button to add in contents. </h3>
+        {% endif %}
+    </div>
+    <a class="btn btn-outline-primary" href="#top" role="button" id="backToTop">Back to Top</a>
+    <!-- <div class="my-3">
+        <div class="mb-2">
+            <a class="btn btn-outline-dark" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+            <a class="btn btn-outline-primary" href="/edit_chapters/{{ chapter.id }}" role="button">Edit</a>
+            {% if chapter.isPublished %}
+                <a class="btn btn-outline-primary" href="/download_chapter/{{ chapter.id }}" role="button">Download</a>
+            {% endif %}
+        </div>
+        {% if elements %}
+            {% for element, skill_names in elements.items %}
+                <div class="card my-3">
+                    <div class="card-body">
+                        {% if element.element_type == "paragraph" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Paragraph</h6>
+                                <p class="card-text" style="white-space: pre-line;">{{element.content}}</p>
+                            </div>
+                        {% elif element.element_type == "note" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Note</h6>
+                                <p class="card-text" style="white-space: pre-line;">{{element.content}}</p>
+                            </div>
+                        {% elif element.element_type == "example" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Example</h6>
+                                <p class="card-text" style="white-space: pre-line;">{{element.content}}</p>
+                            </div>
+                        {% elif element.element_type == "subsection" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Subsection</h6>
+                                <h3 class="card-text" style="white-space: pre-line;">{{element.content}}</h3 class="card-text">
+                                <hr>
+                            </div>
+                        {% elif element.element_type == "image" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Image</h6>
+                                {% if element.content != "" %}
+                                    <img src="{% static 'app/' %}{{ element.content }}" alt="{{ element.content }}" style="max-width: 30%; object-fit: contain;">
+                                {% else %}
+                                    <p>No image uploaded. </p>
+                                {% endif %}
+                            </div>
+                        {% elif element.element_type == "video" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Video</h6>
+                                {% if element.content == "" %}
+                                    <p>No video linked. </p>
+                                {% else %}
+                                    <a href="https://www.youtube.com/watch?v={{ element.content }}" target="_blank">https://www.youtube.com/watch?v={{ element.content }}</a>
+                                {% endif %}
+                            </div>
+                        {% elif element.element_type == "mcq" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Multiple Choice</h6>
+                                <p><strong>Question:</strong> {{ element.question }}</p>
+                                <p><strong>Options:</strong> {{ element.options }}</p>
+                                <p><strong>Answer:</strong> {{ element.answer }}</p>
+                                {% if element.hint != "" %}
+                                    <p><strong>Hint:</strong> {{ element.hint }}</p>    
+                                {% else %}
+                                    <p><strong>Hint:</strong> No hint provided.</p>    
+                                {% endif %}
+                                {% if skill_names != "" %}
+                                    <p><strong>Skills:</strong> {{ skill_names }}</p>
+                                {% else %}
+                                    <p><strong>Skills:</strong> No related skills specified.</p>
+                                {% endif %}
+                            </div>
+                        {% elif element.element_type == "fib" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Fill in the blank</h6>
+                                <p><strong>Question:</strong> {{ element.question }}</p>
+                                <p><strong>Answer:</strong> {{ element.answer }}</p>
+                                {% if element.hint != "" %}
+                                    <p><strong>Hint:</strong> {{ element.hint }}</p>    
+                                {% else %}
+                                    <p><strong>Hint:</strong> No hint provided.</p>    
+                                {% endif %}
+                                {% if skill_names != "" %}
+                                    <p><strong>Skills:</strong> {{ skill_names }}</p>
+                                {% else %}
+                                    <p><strong>Skills:</strong> No related skills specified.</p>
+                                {% endif %}
+                            </div>
+                        {% elif element.element_type == "likert" %}
+                            <div class="mb-3">
+                                <h6 class="card-title mt-2 mb-3 fw-bold">Likert chart</h6>
+                                <p><strong>Question:</strong> {{ element.question }}</p>
+                                <p><strong>{{ element.negative }}</strong>
+                                    <span class="badge rounded-pill bg-light text-dark">0</span>
+                                    <span class="badge rounded-pill bg-light text-dark">1</span>
+                                    <span class="badge rounded-pill bg-light text-dark">2</span>
+                                    <span class="badge rounded-pill bg-light text-dark">3</span>
+                                    <span class="badge rounded-pill bg-light text-dark">4</span>
+                                    <span class="badge rounded-pill bg-light text-dark">5</span>
+                                    <span class="badge rounded-pill bg-light text-dark">6</span>
+                                    <strong>{{ element.positive }}</strong></p>
+                            </div>
+                        {% endif %}   
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <h3>No elements are available.</h3>
+        {% endif %}
+    </div> -->
+    <!-- <a class="btn btn-outline-dark" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+    <a class="btn btn-outline-primary" href="/edit_chapters/{{ chapter.id }}" role="button">Edit</a>
+    {% if chapter.isPublished %}
+        <a class="btn btn-outline-primary" href="/download_chapter/{{ chapter.id }}" role="button">Download</a>
+    {% endif %} -->
+    
+    <!-- <a class="nav-link" href="#scrollspyHeading1">First</a> -->
+</div>
+
+{% endblock content %}

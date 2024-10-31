@@ -1,0 +1,104 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    {{ chapter }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="padding-top: 100px;">
+
+    <h1>{{ chapter }}</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="/chapters/{{ chapter.id }}">Content</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_responses/{{ chapter.id }}">Responses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/chapter_summaries/{{ chapter.id }}">Summary</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_matrix/{{ chapter.id }}">Skill Matrix</a>
+        </li>
+    </ul>
+
+    <div class="my-3">
+      <a class="btn btn-outline-dark mb-4" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+        {% if responses %}
+          <b><p>Total responses received: {{ total_responses }}</p></b>
+          {% for question, answers in responses.items %}
+          <div class="card my-3">
+            <div class="card-body">     
+            {% if question.element_type == "mcq" %}
+              <div class="mb-3">
+                  <h5 class="card-title mt-2 mb-3">Multiple choice <span class="float-end badge rounded-pill bg-success">Percentage Correct: {{ answers.1 }} %</span></h5>
+                  
+                  <p><strong>Question:</strong> {{ question.question }}</p>
+                  <p><strong>Correct Answer:</strong> {{ question.answer }}</p>
+                  <p><strong>Related Skills:</strong> {{ answers.2 }}</p>
+                  <div class="list-group my-3">
+                    {% for option, num in answers.0.items %}
+                      {% if option == question.answer %}
+                        <li class="list-group-item list-group-item-action" style="background-color: #e9fae9;">{{option}} <b style="color: green">Correct! </b><small class="text-muted">({{ num }} responses) </small></li>
+                      {% else %}
+                        <li class="list-group-item list-group-item-action">{{option}} <small class="text-muted">({{ num }} responses) </small></li>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+              </div>
+            {% elif question.element_type == "fib" %}
+              <div class="mb-3">
+                  <h5 class="card-title mt-2 mb-3">Fill in the blank <span class="float-end badge rounded-pill bg-success">Percentage Correct: {{ answers.1 }} %</span></h5>
+                  <p><strong>Question:</strong> {{ question.question }}</p>
+                  <p><strong>Correct Answer:</strong> {{ question.answer }}</p>
+                  <p><strong>Related Skills:</strong> {{ answers.2 }}</p>
+                  <div class="list-group my-3">
+                    {% for option, num in answers.0.items %}
+                      {% if option == question.answer %}
+                        <li class="list-group-item list-group-item-action" style="background-color: #e9fae9;">{{option}} <b style="color: green">Correct! </b><small class="text-muted">({{ num }} responses) </small></li>
+                      {% else %}
+                        <li class="list-group-item list-group-item-action">{{option}} <small class="text-muted">({{ num }} responses) </small></li>
+                      {% endif %}
+                    {% endfor %}
+                  </div>
+              </div>
+            {% elif question.element_type == "likert" %}
+              <div class="mb-3">
+                <h5 class="card-title mt-2 mb-3">Likert chart</h5>
+                <p><strong>Question:</strong> {{ question.question }}</p>
+                <table class="table table-borderless text-center">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{ question.negative }}</th>
+                      {% for option, num in answers.0.items %}
+                        <th><span class="badge rounded-pill bg-light text-dark border">{{ option }}</span></th>
+                      {% endfor %}
+                      <th scope="col">{{ question.positive }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                        <td></td>
+                      {% for option, num in answers.0.items %}
+                        <td class="text-muted"> {{ num }} Responses</td>
+                      {% endfor %}
+                      <th></th>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            {% endif %}
+            </div>
+          </div>        
+          {% endfor %}
+        {% else %}
+          <h3>No responses received.</h3>
+        {% endif %}
+    </div>
+
+    <a class="btn btn-outline-dark mt-4" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+    
+</div>
+{% endblock content %}

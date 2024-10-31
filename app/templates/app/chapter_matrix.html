@@ -1,0 +1,76 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    {{ chapter }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="padding-top: 100px;">
+
+    <h1>{{ chapter }}</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="/chapters/{{ chapter.id }}">Content</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_responses/{{ chapter.id }}">Responses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_summaries/{{ chapter.id }}">Summary</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/chapter_matrix/{{ chapter.id }}">Skill Matrix</a>
+        </li>
+    </ul>
+    <div class="my-3">
+        <a class="btn btn-outline-dark mb-4" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+        {% if matrix %}
+        <p>Below is a matrix that summarises students' understandings of the key skills covered by the questions in this chapter. The number of points for each skill corresponds to the number of questions that links to the particular skill, and students score a point in a particular skill when they correctly answer a question linked to that skill.</p>
+        <table class="table table-hover table-responsive">
+            <thead>
+                <tr>
+                    <th scope="col">Skills</th>
+                    {% for skill, total_point in skills.items %}
+                        <th scope="col">{{ skill|title }}</th>
+                        <!-- (Max: {{ total_point }}pts) -->
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <!-- <tr class="table-secondary">
+                    <th scope="row">Total #Points Achievable</th>
+                    {% for skill, total_point in skills.items %}
+                        <td class="fw-bold">{{ total_point }}</td>
+                    {% endfor %}
+                </tr> -->
+                {% for student, skill_ratings in matrix.items %}
+                <tr>
+                    <th scope="row">{{ student }}</th>
+                    {% for skill, rating in skill_ratings.items %}
+                    <td>{{ rating.0 }}<small class="text-muted"> / {{ rating.1 }}</small></td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                <!-- <tr class="table-light">
+                    <th scope="row">Class Average</th>
+                    {% for skill, rating in average_scores.items %}
+                    <td class="fw-bold">{{ rating }}</td>
+                    {% endfor %}
+                </tr> -->
+                <tr class="table-light">
+                    <th scope="row">Class Average (%)</th>
+                    {% for skill, rating in average_scores_percent.items %}
+                    <td class="fw-bold">{{ rating }}%</td>
+                    {% endfor %}
+                </tr>                
+            </tbody>
+        </table>
+        {% else %}
+            <h3>No responses received.</h3>
+        {% endif %}
+    </div>
+    <a class="btn btn-outline-dark mt-4" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+    
+</div>
+{% endblock content %}

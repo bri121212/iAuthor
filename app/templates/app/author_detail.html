@@ -1,0 +1,121 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    {{ author }}
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-5" style="padding-top: 100px;">
+    <h1>{{ author }}</h1>
+    <p><b>Email: </b>{{ author.user.email }}</p>
+    
+    <h4 class="card-title mt-4">Textbooks</h4>
+    {% if textbooks %}
+        <div class="list-group my-2">
+            {% for textbook in textbooks %}
+                <a href="/textbooks/{{ textbook.id }}" class="list-group-item list-group-item-action">
+                    {{ textbook.name }}
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No textbooks available.</p>
+    {% endif %}
+    <!-- Add Textbook -->
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addTextbook">Add Textbook</button>      
+    <div class="modal fade" id="addTextbook" tabindex="-1" aria-labelledby="addTextbookLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">    
+        <div class="modal-content">                 
+            <form action = "{% url 'add_textbook' %}" method="post" class="needs-validation" novalidate>{% csrf_token %}
+                <input type="hidden" name="textbook_id" value="{{ textbook.id }}">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addTextbookLabel">Add a textbook</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label for="textbookName" class="form-label mb-2">Textbook Name: </label>
+                        <input type="text" class="form-control" id="textbookName" name = "textbook_name" placeholder="Enter the textbook name" required>
+                        <div class="invalid-feedback">Textbook name cannot be empty!</div>
+                    </div>
+                    <!-- <div class="form-group mb-3">
+                        <label for="textbookFile" class="form-label mb-2">File: (Optional) </label>
+                        <input type="file" class="form-control" id="textbookFile" name = "textbook_file" multiple>
+                        <div class="invalid-feedback"></div>
+                    </div> -->
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-outline-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+
+    <!-- Delete Textbook -->
+    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#deleteTextbook">Delete Textbook</button>      
+    <div class="modal fade" id="deleteTextbook" tabindex="-1" aria-labelledby="deleteTextbookLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">    
+            <div class="modal-content">                 
+                <form action = "{% url 'delete textbook' %}" method="post" class="needs-validation" novalidate enctype="multipart/form-data">{% csrf_token %}
+                    <input type="hidden" name="textbook_id" value="{{ textbook.id }}">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="deleteTextbookLabel">Delete a textbook</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    {% if textbooks %}
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <input type="hidden" name="textbook_id" value="{{ textbook.id }}">
+                                <label for="textbookID" class="form-label mb-2">Choose the textbook to delete: </label>
+                                <select class="form-select" aria-label="Select textbook to delete" id="textbookID" name="textbook_id">
+                                    {% if textbooks %}
+                                        {% for textbook in textbooks %}
+                                            <option value="{{ textbook.id }}" >{{ textbook.name }}</option>
+                                        {% endfor %}
+                                    {% endif %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-outline-primary">Delete</button>
+                        </div>
+                    {% else %}
+                        <div class="modal-body">
+                            <p>No textbooks available. </p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+                }
+
+                form.classList.add('was-validated')
+            }, false)
+            })
+        })()
+</script>
+{% endblock content %}

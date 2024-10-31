@@ -1,0 +1,89 @@
+{% extends "./master.html" %} 
+{% load static %}
+{% block title %}
+    iAuthor - Login
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="row border rounded bg-white shadow box-area p-5">
+        <div class="row align-items-center">
+            <div class="header-text mb-4 text-center">
+                <h2>Welcome to iAuthor</h2>
+            </div>
+
+            {% if login_failed %}
+                <div class="container">
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                        Invalid username or password. Please try again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="post" id="loginForm">{% csrf_token %}
+                <div class="input-group-login mb-3"  style="display: block;">
+                    <input type="username" class="form-control form-control-lg bg-light fs-6" placeholder="Username" name="username" required>
+                </div>
+                <div class="input-group-login mb-3">
+                    <div class="input-group">
+                        <input type="password" id="passwordInput3" class="form-control form-control-lg bg-light fs-6" placeholder="Password" name="password" required>
+                        <div class="input-group-append">
+                            <button type="button" class="btn btn-outline-secondary btn-lg" onclick="togglePasswordVisibility3()">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group-login mt-2 mb-4">
+                    <button type="submit" class="btn btn-lg btn-dark w-100 fs-6" name="login_button">Login</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    //alert delete
+    if (localStorage.getItem('hideAlert')) {
+        document.getElementById('passwordMismatchAlert').style.display = 'none';
+    }
+    
+    function closeAlert() {
+        document.getElementById('passwordMismatchAlert').style.display = 'none';
+        localStorage.setItem('hideAlert', 'true');
+    }
+
+    function togglePasswordVisibility3() {
+        var passwordInput3 = document.getElementById('passwordInput3')
+        
+
+        if (passwordInput3.type === 'password') {
+            passwordInput3.type = 'text';
+        } else {
+            passwordInput3.type = 'password';
+        }
+    }
+
+    //signup button
+    document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem('handleSignupButtonClick')) {
+            var signupLink = document.getElementById('signup-link');
+            setTimeout(function() {
+                signupLink.click();
+            }, 50);
+    
+            localStorage.removeItem('handleSignupButtonClick');
+        }
+    });
+    
+
+</script>
+
+{% endblock %}

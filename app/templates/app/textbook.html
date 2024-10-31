@@ -1,0 +1,172 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    {{ textbook }} -  Table of Contents
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="padding-top: 100px;">
+    <h1>{{ textbook }} -  Table of Contents</h1>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h4 class="card-title">Published Chapters</h4>
+            {% if published_chapters %}
+                <ol class="list-group list-group-numbered my-3">
+                    {% for chapter in published_chapters %}
+                        <li class="list-group-item list-group-item-action">
+                            <a href="/chapters/{{ chapter.id }}" class="text-dark">{{ chapter.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ol>
+            {% else %}
+                <p>No published chapters available.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="card mb-3">
+        <div class="card-body">
+            <h4 class="card-title">Unpublished Chapters</h4>
+            {% if unpublished_chapters %}
+                <ol class="list-group list-group-numbered my-3">
+                    {% for chapter in unpublished_chapters %}
+                        <li class="list-group-item list-group-item-action"><a href="/chapters/{{ chapter.id }}" class="text-dark">
+                            {{ chapter.name }}
+                        </a></li>
+                    {% endfor %}
+                </ol>
+                
+            {% else %}
+                <p>No unpublished chapters available.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="mt-3">
+        <a href="/{{ user.id }}" class="btn btn-outline-dark">Back</a>
+        <a href="/edit_textbooks/{{ textbook.id }}" class="btn btn-outline-primary">Edit Chapter Order</a>
+        <!-- Add Chapter -->
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addChapter">Add Chapter</button>      
+        <div class="modal fade" id="addChapter" tabindex="-1" aria-labelledby="addChapterLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">    
+                <div class="modal-content">                 
+                    <form action = "{% url 'add chapter' %}" method="post" class="needs-validation" novalidate enctype="multipart/form-data">{% csrf_token %}
+                        <input type="hidden" name="textbook_id" value="{{ textbook.id }}">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="addChapterLabel">Add a chapter</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group mb-4">
+                                <label for="chapterName" class="form-label mb-2"><strong>Chapter Name: </strong><span class="badge rounded-pill bg-primary">Required</span></label>
+                                <input type="text" class="form-control" id="chapterName" name = "chapter_name" placeholder="Enter the chapter name" required>
+                                <div class="invalid-feedback">Chapter name cannot be empty!</div>
+                            </div>
+                            <hr>
+                            <div class="form-group mb-3">
+                                <div class="mb-2">
+                                    <label for="chapterFile" class="form-label">Upload Raw File (.erst): <span class="badge rounded-pill bg-secondary">Optional</span></label>
+                                    <br>
+                                    <p class="text-muted mb-2 fw-light lh-1" style="font-size: 0.7rem">If you have a raw file for this chapter written in Markdown (files ending with .erst), please upload here and the content will be automatically saved to this chapter.</p>
+                                    <input type="file" class="form-control" id="chapterFile" name = "chapter_file" accept=".erst">
+                                </div>
+                                <label for="imageFiles" class="form-label my-2">Upload Related Image Files: <span class="badge rounded-pill bg-secondary">Optional</span></label>
+                                <p class="text-muted mb-2 fw-light lh-1" style="font-size: 0.7rem">If your .erst file includes images, please upload all images referenced here.</p>
+                                <input type="file" class="form-control" id="imageFiles" name="image_files" accept="image/png" multiple>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-outline-primary">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Delete Chapter -->
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#deleteChapter">Delete Chapter</button>      
+        <div class="modal fade" id="deleteChapter" tabindex="-1" aria-labelledby="deleteChapterLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">    
+                <div class="modal-content">                 
+                    <form action = "{% url 'delete chapter' %}" method="post" class="needs-validation" novalidate enctype="multipart/form-data">{% csrf_token %}
+                        <input type="hidden" name="textbook_id" value="{{ textbook.id }}">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteChapterLabel">Delete a chapter</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        {% if published_chapters or unpublished_chapters %}
+                            <div class="modal-body">
+                                <div class="form-group mb-3">
+                                    <input type="hidden" name="textbook_id" value="{{ textbook.id }}">
+                                    <label for="chapterID" class="form-label mb-2">Choose the chapter to delete: </label>
+                                    <select class="form-select" aria-label="Select chapter to delete" id="chapterID" name="chapter_id">
+                                        {% if published_chapters %}
+                                            {% for chapter in published_chapters %}
+                                                <option value="{{ chapter.id }}" >{{ chapter.name }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                        {% if unpublished_chapters %}
+                                            {% for chapter in unpublished_chapters %}
+                                                <option value="{{ chapter.id }}" >{{ chapter.name }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+
+                                    </select>
+                                </div>
+                                <!-- <div class="form-group mb-3">
+                                    <label for="chapterFile" class="form-label mb-2">Upload Raw File (.erst): </label>
+                                    <input type="file" class="form-control" id="chapterFile" name = "chapter_file" accept=".erst">
+                                    <label for="imageFiles" class="form-label my-2">Upload Related Image Files: </label>
+                                    <input type="file" class="form-control" id="imageFiles" name="image_files" accept="image/png" multiple>
+                                </div> -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-outline-primary">Delete</button>
+                            </div>
+                        {% else %}
+                            <div class="modal-body">
+                                <p>No chapters available. </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (function () {
+        'use strict';
+    
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation');
+    
+        // Loop over them and prevent submission if form is invalid
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+    
+                form.classList.add('was-validated');
+            }, false);
+        });
+    
+        // Clear validation messages when the modal is closed or canceled
+        var modal = document.getElementById('addChapter');
+        modal.addEventListener('hidden.bs.modal', function () {
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.reset(); // Reset the form fields
+                form.classList.remove('was-validated'); // Remove validation classes
+            });
+        });
+    })();
+</script>
+
+{% endblock content %}

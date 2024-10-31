@@ -1,0 +1,745 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    Edit - {{ chapter }}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="padding-top: 100px;">
+
+    <h1>{{ chapter }}</h1>
+    
+    <form action="" method="post" id="chapter-form" enctype="multipart/form-data">{% csrf_token %}
+        <div class="my-3">
+            <a href="/chapters/{{ chapter.id }}" class="btn btn-outline-dark">Cancel</a>
+            <button type="submit" class="btn btn-outline-primary">Save</button>
+        </div>
+        <div class="btn-group mb-3 border rounded" role="group" aria-label="Button group with nested dropdown">
+            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+          
+            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Add Exercise
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+              </ul>
+            </div>
+        </div> 
+        <div id="element-container">
+        {% if elements %}
+            {% for element, skill_names in elements.items %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        {% if element.element_type == "paragraph" %}
+                            <div class="mb-3">
+                                <label for="paragraph" class="form-label"><strong>Paragraph</strong></label>
+                                <input type="hidden" name="elements" value="paragraph::{{element.id}}"/>
+                                <textarea class="form-control" id="paragraph" rows="10" name="elements">{{element.content}}</textarea>
+                            </div>
+                        {% elif element.element_type == "note" %}
+                            <div class="mb-3">
+                                <label for="note" class="form-label"><strong>Note</strong></label>
+                                <input type="hidden" name="elements" value="note::{{element.id}}"/>
+                                <textarea class="form-control" id="note" rows="6" name="elements">{{element.content}}</textarea>
+                            </div>
+                        {% elif element.element_type == "example" %}
+                            <div class="mb-3">
+                                <label for="example" class="form-label"><strong>Example</strong></label>
+                                <input type="hidden" name="elements" value="example::{{element.id}}"/>
+                                <textarea class="form-control" id="example" rows="6" name="elements">{{element.content}}</textarea>
+                            </div>
+                        {% elif element.element_type == "subsection" %}
+                            <div class="mb-3">
+                                <label for="subsection" class="form-label"><strong>Subsection</strong></label>
+                                <input type="hidden" name="elements" value="subsection::{{element.id}}"/>
+                                <textarea class="form-control fw-bold text-primary" style="font-size: 1.75rem" id="subsection" rows="1" name="elements">{{element.content}}</textarea>
+                            </div>
+                        {% elif element.element_type == "image" %}
+                            <div class="mb-3">
+                                <label for="image" class="form-label"><strong>Image</strong></label>
+                                <br>
+                                {% if element.content != "" %}
+                                    <img src="{% static 'app/' %}{{ element.content }}" alt="{{ element.content}}" style="max-width: 30%; object-fit: contain;">
+                                    <p>Upload a new image here.</p>
+                                {% else %}
+                                    <p>Upload image here.</p>
+                                {% endif %}
+                                <input type="hidden" name="elements" value="image::{{element.id}}"/>
+                                <input class="form-control" type="file" id="image" accept="image/*" name="elements">
+                            </div>
+                        {% elif element.element_type == "video" %}
+                            <div class="mb-3">
+                                <label for="video" class="form-label"><strong>Video</strong></label>
+                                <input type="hidden" name="elements" value="video::{{element.id}}"/>
+                                <input class="form-control" id="video" value="{{element.content}}" name="elements">
+                            </div>
+                        {% elif element.element_type == "mcq" %}
+                            <div class="mb-3">                                
+                                <p><strong>Multiple choice</strong></p>
+                                <input type="hidden" name="elements" value="mcq::{{element.id}}"/>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="mcq" class="col-form-label">Question:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="mcq" class="form-control" value="{{element.question}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="mcq" class="col-form-label">Options:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="mcq" class="form-control" value="{{element.options}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="mcq" class="col-form-label">Answer:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="mcq" class="form-control" value="{{element.answer}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="mcq" class="col-form-label">Hint:</label>
+                                    </div>
+                                    <div class="col">
+                                        <textarea class="form-control" id="mcq" rows="3" name="elements">{{element.hint}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="mcq" class="col-form-label">Skills:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="mcq" class="form-control" value="{{skill_names}}" name="elements">
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif element.element_type == "fib" %}
+                            <div class="mb-3">                                
+                                <p><strong>Fill in the blank</strong></p>
+                                <input type="hidden" name="elements" value="fib::{{element.id}}"/>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="fib" class="col-form-label">Question:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="fib" class="form-control" value="{{element.question}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="fib" class="col-form-label">Answer:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="fib" class="form-control" value="{{element.answer}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="fib" class="col-form-label">Hint:</label>
+                                    </div>
+                                    <div class="col">
+                                      <textarea class="form-control" id="fib" rows="3" name="elements">{{element.hint}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="fib" class="col-form-label">Skills:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="fib" class="form-control" value="{{skill_names}}" name="elements">
+                                    </div>
+                                </div>
+                            </div>
+                        {% elif element.element_type == "likert" %}
+                            <div class="mb-3">                                
+                                <p><strong>Likert scale</strong></p>
+                                <input type="hidden" name="elements" value="likert::{{element.id}}"/>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="likert" class="col-form-label">Question:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="likert" class="form-control" value="{{element.question}}" name="elements">
+                                    </div>
+                                </div>
+                                <!-- <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="likert" class="col-form-label">Positive:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="likert" class="form-control" value="{{element.positive}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="likert" class="col-form-label">Negative:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="likert" class="form-control" value="{{element.negative}}" name="elements">
+                                    </div>
+                                </div> -->
+                                <div class=" col d-flex align-items-center">
+                                    <input type="text" id="likert" class="form-control w-25 mx-2" value="{{element.negative}}" name="elements" placeholder="Negative-end of the likert scale">
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">0</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">1</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">2</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">3</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">4</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">5</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">6</span>
+                                    <input type="text" id="likert" class="form-control w-25 mx-2" value="{{element.positive}}" name="elements" placeholder="Positive-end of the likert scale">
+                                </div>
+                            </div>
+                        {% endif %}   
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <!-- <p>No elements are available.</p> -->
+        {% endif %}
+        </div>
+        <a href="/chapters/{{ chapter.id }}" class="btn btn-outline-dark">Cancel</a>
+        <button type="submit" class="btn btn-outline-primary">Save</button>
+    </form>
+
+</div>
+
+<script>
+
+    function initializeTooltips() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        // Hide tooltip on button click for both .btn and .btn-group
+        document.querySelectorAll('.btn, .btn-group').forEach(function(element) {
+            element.addEventListener('click', function() {
+                var tooltip = bootstrap.Tooltip.getInstance(this); // Get the tooltip instance
+                console.log(tooltip);
+                if (tooltip) {
+                    tooltip.hide(); // Hide the tooltip
+                }
+            });
+        });
+    }
+
+    // JavaScript to add new fields
+    $(document).ready(function() {
+        // Add subsection 
+        $(document).on('click', '.add-subsection', function() {
+            console.log('Adding new field')
+            const subsection = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="subsection" class="form-label"><strong>Subsection</strong></label>
+                            <input type="hidden" name="elements" value="subsection::-1"/>
+                            <textarea class="form-control fw-bold text-primary" style="font-size: 1.75rem" id="subsection" rows="1" name="elements"></textarea>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(subsection);
+            } else {
+                $('#element-container').prepend(subsection); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add paragraph
+        $(document).on('click', '.add-paragraph', function() {
+            console.log('Adding new field')
+            const paragraph = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="hidden" name="elements" value="paragraph::-1"/>
+                            <label for="paragraph" class="form-label"><strong>Paragraph</strong></label>
+                            <textarea class="form-control" id="paragraph" rows="10" name="elements"></textarea>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(paragraph);
+            } else {
+                $('#element-container').prepend(paragraph); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+        
+        // Add note
+        $(document).on('click', '.add-note', function() {
+            console.log('Adding new field')
+            const note = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="hidden" name="elements" value="note::-1"/>
+                            <label for="note" class="form-label"><strong>Note</strong></label>
+                            <textarea class="form-control" id="note" rows="6" name="elements"></textarea>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(note);
+            } else {
+                $('#element-container').prepend(note); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add example
+        $(document).on('click', '.add-example', function() {
+            console.log('Adding new field')
+            const example = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="hidden" name="elements" value="example::-1"/>
+                            <label for="example" class="form-label"><strong>Example</strong></label>
+                            <textarea class="form-control" id="example" rows="6" name="elements"></textarea>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(example);
+            } else {
+                $('#element-container').prepend(example); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add image
+        $(document).on('click', '.add-image', function() {
+            console.log('Adding new field')
+            const image = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="hidden" name="elements" value="image::-1"/>
+                            <label for="image" class="form-label"><strong>Image</strong></label>
+                            <input class="form-control" type="file" id="image" accept="image/*" name="elements">
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(image);
+            } else {
+                $('#element-container').prepend(image); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add video
+        $(document).on('click', '.add-video', function() {
+            console.log('Adding new field')
+            const video = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <input type="hidden" name="elements" value="video::-1"/>
+                            <label for="video" class="form-label"><strong>Video</strong></label>
+                            <input class="form-control" id="video" name="elements">
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(video);
+            } else {
+                $('#element-container').prepend(video); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add mcq
+        $(document).on('click', '.add-mcq', function() {
+            console.log('Adding new field')
+            const mcq = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p><strong>Multiple choice</strong></p>
+                            <input type="hidden" name="elements" value="mcq::-1"/>
+                            <div class="row g-3 align-items-center mb-2">
+                                <div class="col-1">
+                                    <label for="mcq" class="col-form-label">Question:</label>
+                                </div>
+                                <div class="col">
+                                    <input type="text" id="mcq" class="form-control" value="{{element.question}}" name="elements">
+                                </div>
+                            </div>
+                            <div class="row g-3 align-items-center mb-2">
+                                <div class="col-1">
+                                    <label for="mcq" class="col-form-label">Options:</label>
+                                </div>
+                                <div class="col">
+                                    <input type="text" id="mcq" class="form-control" value="{{element.options}}" name="elements">
+                                </div>
+                            </div>
+                            <div class="row g-3 align-items-center mb-2">
+                                <div class="col-1">
+                                    <label for="mcq" class="col-form-label">Answer:</label>
+                                </div>
+                                <div class="col">
+                                    <input type="text" id="mcq" class="form-control" value="{{element.answer}}" name="elements">
+                                </div>
+                            </div>
+                            <div class="row g-3 align-items-center mb-2">
+                                <div class="col-1">
+                                    <label for="mcq" class="col-form-label">Hint:</label>
+                                </div>
+                                <div class="col">
+                                    <textarea class="form-control" id="mcq" rows="3" name="elements">{{element.hint}}</textarea>
+                                </div>
+                            </div>
+                            <div class="row g-3 align-items-center mb-2">
+                                <div class="col-1">
+                                    <label for="mcq" class="col-form-label">Skills:</label>
+                                </div>
+                                <div class="col">
+                                    <input type="text" id="mcq" class="form-control" value="{{skill_names}}" name="elements">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(mcq);
+            } else {
+                $('#element-container').prepend(mcq); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add fib
+        $(document).on('click', '.add-fib', function() {
+            console.log('Adding new field')
+            const fib = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p><strong>Fill in the blank</strong></p>
+                            <input type="hidden" name="elements" value="fib::-1"/>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="fib" class="col-form-label">Question:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="fib" class="form-control" value="{{element.question}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="fib" class="col-form-label">Answer:</label>
+                                    </div>
+                                    <div class="col">
+                                      <input type="text" id="fib" class="form-control" value="{{element.answer}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                      <label for="fib" class="col-form-label">Hint:</label>
+                                    </div>
+                                    <div class="col">
+                                      <textarea class="form-control" id="fib" rows="3" name="elements">{{element.hint}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="fib" class="col-form-label">Skills:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="fib" class="form-control" value="{{skill_names}}" name="elements">
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(fib);
+            } else {
+                $('#element-container').prepend(fib); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        // Add likert
+        $(document).on('click', '.add-likert', function() {
+            console.log('Adding new field')
+            const likert = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p><strong>Likert scale</strong></p>
+                            <input type="hidden" name="elements" value="likert::-1"/>
+                                <div class="row g-3 align-items-center mb-2">
+                                    <div class="col-1">
+                                        <label for="likert" class="col-form-label">Question:</label>
+                                    </div>
+                                    <div class="col">
+                                        <input type="text" id="likert" class="form-control" value="{{element.question}}" name="elements">
+                                    </div>
+                                </div>
+                                <div class=" col d-flex align-items-center">
+                                    <input type="text" id="likert" class="form-control w-25 mx-2" value="{{element.negative}}" name="elements" placeholder="Negative-end of the likert scale">
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">0</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">1</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">2</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">3</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">4</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">5</span>
+                                    <span class="badge rounded-pill bg-light text-dark mx-3">6</span>
+                                    <input type="text" id="likert" class="form-control w-25 mx-2" value="{{element.positive}}" name="elements" placeholder="Positive-end of the likert scale">
+                                </div>
+                        </div>
+                        <div class="btn-group border rounded" role="group" aria-label="Button group with nested dropdown">
+                            <button type="button" class="btn btn-light add-subsection" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a subsection below"><i class="bi bi-hr"></i></button>
+                            <button type="button" class="btn btn-light add-paragraph" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a paragraph below"><i class="bi bi-fonts"></i></button>
+                            <button type="button" class="btn btn-light add-note" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a note below"><i class="bi bi-sticky"></i></button>
+                            <button type="button" class="btn btn-light add-example" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a example below"><i class="bi bi-lightbulb"></i></button>
+                            <button type="button" class="btn btn-light add-image" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a image below"><i class="bi bi-image"></i></button>
+                            <button type="button" class="btn btn-light add-video" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to add a video below"><i class="bi bi-youtube"></i></button>
+                          
+                            <div class="btn-group" role="group" data-bs-toggle="tooltip" data-bs-placement="top" title="Click to choose an exercise type to add below">
+                              <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Add Exercise
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a class="dropdown-item add-mcq">Multiple choice</a></li>
+                                <li><a class="dropdown-item add-fib">Fill in the blank</a></li>
+                                <li><a class="dropdown-item add-likert">Likert scale</a></li>
+                              </ul>
+                            </div>
+                        </div> 
+                        <button type="button" class="btn btn-light float-end remove-element"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>`;
+            var closestCard = $(this).closest('.card');
+            if (closestCard.length > 0) {
+                closestCard.after(likert);
+            } else {
+                $('#element-container').prepend(likert); // or you can append to a specific container, e.g., $('.container').append(subsection);
+            }
+            initializeTooltips();
+        });
+
+        //Remove element
+        $(document).on('click', '.remove-element', function() {
+            $(this).closest('.card').remove();
+        });
+
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeTooltips();
+    });
+</script>
+
+{% endblock content %}
+
+                        <!-- <div class="card-body">
+                            <h6>Paragraph</h6>
+                            <div contenteditable="true" aria-multiline="true">{{element.content}}</div>
+                        </div> -->

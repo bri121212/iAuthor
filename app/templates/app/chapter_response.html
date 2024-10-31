@@ -1,0 +1,190 @@
+{% extends "./master.html" %}
+{% load static %}
+{% block title %}
+    {{ chapter }}
+{% endblock %}
+
+{% block content %}
+<style>
+    .hide {
+        display: none;
+    }
+
+</style>
+<div class="container mt-5" style="padding-top: 100px;">
+
+    <h1>{{ chapter }}</h1>
+
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="/chapters/{{ chapter.id }}">Content</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/chapter_responses/{{ chapter.id }}">Responses</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/chapter_summaries/{{ chapter.id }}">Summary</a>
+        </li>
+        <li>
+          <a class="nav-link" href="/chapter_matrix/{{ chapter.id }}">Skill Matrix</a>
+        </li>
+    </ul>
+    
+    <div class="my-3">
+        <a class="btn btn-outline-dark mb-4" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+    
+    {% if responses %} 
+        <h3><select class="custom-select div-toggle" data-target=".student-responses">
+        {% for student in students %}  
+            <option value="{{ student.id }}" data-show=".{{ student.id }}">{{ student.name }}</option>
+        {% endfor %}
+        </select> 's responses</h3>
+        <div class="student-responses">
+        {% for student in students %}
+            <div class="{{ student.id }}">
+                {% for answer, question in responses.items %}
+                    {% if answer.student.id == student.id %}
+                        <div class="card my-3">
+                            <div class="card-body">
+                            {% if question.element_type == "mcq" %}
+                                <div class="mb-3">
+                                    <h5 class="card-title mt-2 mb-3">Multiple choice</h5>
+                                    <p><strong>Question:</strong> {{ question.question }}</p>
+                                    <p><strong>Answer:</strong> {{ answer.answer }}</p>
+                                    {% if question.answer == answer.answer %} 
+                                        <p style="color: green">Correct!</p>
+                                    {% else %}
+                                        <p><span style="color: red">Incorrect!</span> {{ question.hint }}</p>
+                                    {% endif %}
+                                    <!-- <p>{{ question.skills }}</p> -->
+                                    {% for q, skill in skills.items %}
+                                        {% if q == question %}
+                                            <p><strong>Related Skills: </strong>{{ skill }}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% elif question.element_type == "fib" %}
+                                <div class="mb-3">
+                                    <h5 class="card-title mt-2 mb-3">Fill in the blank</h5>
+                                    <p><strong>Question:</strong> {{ question.question }}</p>
+                                    <p><strong>Answer:</strong> {{ answer.answer }}</p>
+                                    {% if question.answer == answer.answer %} 
+                                        <p style="color: green">Correct!</p>
+                                    {% else %}
+                                        <p><span style="color: red">Incorrect!</span> {{ question.hint }}</p>
+                                    {% endif %}
+                                    <!-- <p>{{ question.skills }}</p> -->
+                                    {% for q, skill in skills.items %}
+                                        {% if q == question %}
+                                            <p><strong>Related Skills: </strong>{{ skill }}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% elif question.element_type == "likert" %}
+                                <div class="mb-3">
+                                    <h5 class="card-title mt-2 mb-3">Likert chart</h5>
+                                    <p><strong>Question:</strong> {{ question.question }}</p>
+                                    {% if answer.answer == "0" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-success">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% elif answer.answer == "1" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-success">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% elif answer.answer == "2" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-success">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% elif answer.answer == "3" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-success">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% elif answer.answer == "4" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-success">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% elif answer.answer == "5" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-success">5</span>
+                                        <span class="badge rounded-pill bg-light text-dark">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% elif answer.answer == "6" %}
+                                        <p><strong>{{ question.negative }}</strong>
+                                        <span class="badge rounded-pill bg-light text-dark">0</span>
+                                        <span class="badge rounded-pill bg-light text-dark">1</span>
+                                        <span class="badge rounded-pill bg-light text-dark">2</span>
+                                        <span class="badge rounded-pill bg-light text-dark">3</span>
+                                        <span class="badge rounded-pill bg-light text-dark">4</span>
+                                        <span class="badge rounded-pill bg-light text-dark">5</span>
+                                        <span class="badge rounded-pill bg-success">6</span>
+                                        <strong>{{ question.positive }}</strong></p>
+                                    {% endif %}
+                                    <!-- <p><strong>Answer:</strong> {{ answer.answer }}</p> -->
+                                </div>
+                            {% endif %} 
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endfor %}
+        </div>
+
+    {% else %} 
+        <h3>No responses received.</h3>
+    {% endif %}
+    </div>
+
+    <a class="btn btn-outline-dark mt-4" href="/textbooks/{{ chapter.textbook.id }}" role="button">Back to ToC</a>
+    
+</div>
+
+<script>
+    $(document).on('change', '.div-toggle', function() {
+        var target = $(this).data('target');
+        var show = $("option:selected", this).data('show');
+        $(target).children().addClass('hide');
+        $(show).removeClass('hide');
+    });
+    $(document).ready(function(){
+        $('.div-toggle').trigger('change');
+    });
+
+</script>
+{% endblock content %}
